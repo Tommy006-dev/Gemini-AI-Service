@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Dashboard - AI Core</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Tùy chỉnh màu nền trang giống màu be trong ảnh mẫu */
+        body { background-color: #fdfaf0; }
+    </style>
+</head>
+<body class="min-h-screen font-sans">
+
+    <!-- Header & Navigation -->
+    <header class="bg-white shadow-sm sticky top-0 z-40 mb-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center gap-2">
+                    <svg class="w-8 h-8 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                    <h1 class="text-xl font-bold text-gray-900">AI Blog</h1>
+                </div>
+                <nav class="flex space-x-4">
+                    <button onclick="switchTab('list')" id="tab-list" class="px-3 py-2 rounded-md text-sm font-medium bg-gray-900 text-white transition-colors">Danh sách bài viết</button>
+                    <button onclick="switchTab('create')" id="tab-create" class="px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors">Soạn bài mới</button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+        
+        <!-- Tab: Danh sách bài viết -->
+        <section id="section-list" class="block">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">Bài viết mới nhất</h2>
+                <button onclick="fetchPosts()" class="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    Làm mới
+                </button>
+            </div>
+            
+            <div id="loading-posts" class="hidden justify-center py-12">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+            </div>
+
+            <!-- Lưới hiển thị dạng masonry hoặc grid (ở đây dùng grid tự co giãn giống ảnh) -->
+            <div id="posts-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Data will be rendered here -->
+            </div>
+            
+            <div id="empty-state" class="hidden text-center py-16 bg-white shadow-sm border border-gray-100">
+                <h3 class="mt-2 text-sm font-medium text-gray-900">Chưa có bài viết nào</h3>
+                <p class="mt-1 text-sm text-gray-500">Hãy chuyển sang tab "Soạn bài mới" để tạo bài viết đầu tiên.</p>
+                <button onclick="switchTab('create')" class="mt-4 px-4 py-2 bg-gray-900 text-white text-sm hover:bg-gray-800 transition-colors">Soạn ngay</button>
+            </div>
+        </section>
+
+        <!-- Tab: Soạn bài mới -->
+        <section id="section-create" class="hidden">
+            <div class="max-w-2xl mx-auto bg-white shadow-sm border border-gray-100 overflow-hidden">
+                <div class="bg-gray-900 px-6 py-4">
+                    <h2 class="text-xl font-bold text-white">Tạo nội dung với AI</h2>
+                </div>
+                <div class="p-6">
+                    <div class="mb-5">
+                        <label for="keyword" class="block text-sm font-medium text-gray-700 mb-2">Từ khóa chủ đề (Keyword)</label>
+                        <input type="text" id="keyword" placeholder="VD: Lợi ích của Yoga buổi sáng..." 
+                            class="w-full px-4 py-3 border border-gray-300 focus:ring-2 focus:ring-gray-900 focus:border-gray-900 outline-none transition-all">
+                    </div>
+                    
+                    <button id="generate-btn" onclick="generatePost()" 
+                        class="w-full bg-gray-900 hover:bg-black text-white font-medium py-3 px-4 flex items-center justify-center gap-2 transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        <span>Viết bài ngay</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-5 right-5 transform translate-y-20 opacity-0 transition-all duration-300 z-50">
+        <div id="toast-content" class="bg-white px-6 py-4 shadow-lg border-l-4 border-green-500 flex items-center gap-3">
+            <span id="toast-message" class="text-gray-700 font-medium">Thông báo</span>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = "http://localhost:8000/api"; 
+        let globalPosts = []; 
+
+        function switchTab(tabName) {
+            const listSec = document.getElementById('section-list');
+            const createSec = document.getElementById('section-create');
+            const tabList = document.getElementById('tab-list');
+            const tabCreate = document.getElementById('tab-create');
+
+            if (tabName === 'list') {
+                listSec.classList.remove('hidden');
+                createSec.classList.add('hidden');
+                
+                tabList.className = "px-3 py-2 rounded-md text-sm font-medium bg-gray-900 text-white transition-colors";
+                tabCreate.className = "px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors";
+                
+                fetchPosts();
+            } else {
+                listSec.classList.add('hidden');
+                createSec.classList.remove('hidden');
+                
+                tabCreate.className = "px-3 py-2 rounded-md text-sm font-medium bg-gray-900 text-white transition-colors";
+                tabList.className = "px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors";
+            }
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const msgEl = document.getElementById('toast-message');
+            const content = document.getElementById('toast-content');
+
+            msgEl.textContent = message;
+            
+            if (type === 'success') {
+                content.className = "bg-white px-6 py-4 shadow-lg border-l-4 border-green-500 flex items-center gap-3";
+            } else {
+                content.className = "bg-white px-6 py-4 shadow-lg border-l-4 border-red-500 flex items-center gap-3";
+            }
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        function openInNewTab(index) {
+            const post = globalPosts[index];
+            if (!post) return;
+
+            let tagsArray = [];
+            try {
+                tagsArray = typeof post.tags === 'string' ? JSON.parse(post.tags) : post.tags;
+                if(!Array.isArray(tagsArray) && typeof post.tags === 'string') {
+                    tagsArray = post.tags.split(',').map(t => t.trim());
+                }
+            } catch(e) {
+                tagsArray = typeof post.tags === 'string' ? [post.tags] : [];
+            }
+
+            const postDataToOpen = {
+                title: post.title,
+                content: post.html_content,
+                tags: tagsArray
+            };
+
+            sessionStorage.setItem('current_view_post', JSON.stringify(postDataToOpen));
+            window.open('post_detail.html', '_blank');
+        }
+
+        async function fetchPosts() {
+            const grid = document.getElementById('posts-grid');
+            const emptyState = document.getElementById('empty-state');
+            const loader = document.getElementById('loading-posts');
+            
+            grid.innerHTML = '';
+            emptyState.classList.add('hidden');
+            loader.classList.remove('hidden');
+            loader.classList.add('flex');
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/posts`);
+                const data = await response.json();
+
+                loader.classList.add('hidden');
+                loader.classList.remove('flex');
+
+                if (data.status === 'success' && data.posts && data.posts.length > 0) {
+                    globalPosts = data.posts; 
+
+                    const html = globalPosts.map((post, index) => {
+                        // Lấy tag đầu tiên làm label ở góc trái
+                        let firstTag = "KIẾN THỨC";
+                        try {
+                            let tagsArray = typeof post.tags === 'string' ? JSON.parse(post.tags) : post.tags;
+                            if(!Array.isArray(tagsArray) && typeof post.tags === 'string') {
+                                tagsArray = post.tags.split(',').map(t => t.trim());
+                            }
+                            if (tagsArray && tagsArray.length > 0) {
+                                firstTag = tagsArray[0];
+                            }
+                        } catch(e) {}
+
+                        // Lấy random 1 ảnh từ picsum làm nền (mỗi index sẽ có 1 ảnh cố định)
+                        const coverImage = `https://picsum.photos/seed/${index + 100}/800/600`;
+
+                        // Render cấu trúc thẻ y hệt ảnh mẫu: ảnh nền, gradient làm tối, tag đen chữ trắng, tiêu đề trắng in đậm
+                        return `
+                        <div onclick="openInNewTab(${index})" class="group relative cursor-pointer overflow-hidden aspect-[4/3] bg-gray-200">
+                            <!-- Ảnh nền -->
+                            <img src="${coverImage}" alt="${post.title}" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy">
+                            
+                            <!-- Lớp phủ tối màu gradient từ dưới lên để dễ đọc chữ -->
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent"></div>
+                            
+                            <!-- Label góc trên trái -->
+                            <div class="absolute top-4 left-4 z-10">
+                                <span class="bg-black text-white text-xs font-bold px-2.5 py-1 uppercase tracking-wide">
+                                    ${firstTag}
+                                </span>
+                            </div>
+                            
+                            <!-- Tiêu đề góc dưới -->
+                            <div class="absolute bottom-4 left-4 right-4 z-10">
+                                <h3 class="text-xl sm:text-2xl font-extrabold text-white leading-tight drop-shadow-md group-hover:text-gray-200 transition-colors line-clamp-3">
+                                    ${post.title}
+                                </h3>
+                            </div>
+                        </div>`;
+                    }).join('');
+                    
+                    grid.innerHTML = html;
+                } else {
+                    globalPosts = [];
+                    emptyState.classList.remove('hidden');
+                }
+            } catch (error) {
+                loader.classList.add('hidden');
+                loader.classList.remove('flex');
+                showToast('Lỗi kết nối tới server!', 'error');
+                console.error(error);
+            }
+        }
+
+        async function generatePost() {
+            const keywordInput = document.getElementById('keyword');
+            const keyword = keywordInput.value.trim();
+            const btn = document.getElementById('generate-btn');
+            
+            if (!keyword) {
+                showToast('Vui lòng nhập từ khóa!', 'error');
+                keywordInput.focus();
+                return;
+            }
+
+            const originalBtnHtml = btn.innerHTML;
+            btn.innerHTML = `AI đang suy nghĩ...`;
+            btn.disabled = true;
+            btn.classList.add('opacity-75', 'cursor-not-allowed');
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/create-post`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ keyword: keyword })
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    showToast('Đã tạo và lưu bài viết thành công!', 'success');
+                    keywordInput.value = ''; 
+                    setTimeout(() => switchTab('list'), 500); 
+                } else {
+                    showToast(data.message || 'Có lỗi xảy ra từ Server', 'error');
+                }
+            } catch (error) {
+                showToast('Không thể kết nối tới Blog Service!', 'error');
+                console.error(error);
+            } finally {
+                btn.innerHTML = originalBtnHtml;
+                btn.disabled = false;
+                btn.classList.remove('opacity-75', 'cursor-not-allowed');
+            }
+        }
+
+        window.onload = () => {
+            fetchPosts();
+        };
+    </script>
+</body>
+</html>
