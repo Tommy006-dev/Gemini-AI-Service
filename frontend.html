@@ -17,8 +17,8 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16 items-center">
                 <div class="flex items-center gap-2">
-                    <svg class="w-8 h-8 text-gray-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
-                    <h1 class="text-xl font-bold text-gray-900">AI Blog</h1>
+                    <svg class="w-8 h-8 text-gray-900" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path fill-rule="evenodd" clip-rule="evenodd" d="M8 0C6.89543 0 6 0.895431 6 2V2.0359L5.96891 2.01795C5.01233 1.46566 3.78915 1.79341 3.23686 2.75C2.68458 3.70659 3.01233 4.92977 3.96891 5.48205L4 5.5L3.96891 5.51795C3.01233 6.07023 2.68458 7.29342 3.23686 8.25C3.78915 9.20658 5.01233 9.53434 5.96891 8.98205L6 8.9641V9C6 10.1046 6.89543 11 8 11C9.10457 11 10 10.1046 10 9V8.9641L10.0311 8.98205C10.9877 9.53434 12.2109 9.20658 12.7631 8.25C13.3154 7.29342 12.9877 6.07023 12.0311 5.51795L12 5.5L12.0311 5.48205C12.9877 4.92977 13.3154 3.70659 12.7631 2.75C12.2109 1.79341 10.9877 1.46566 10.0311 2.01795L10 2.0359V2C10 0.895431 9.10457 0 8 0ZM7.99995 7C8.82838 7 9.49995 6.32843 9.49995 5.5C9.49995 4.67157 8.82838 4 7.99995 4C7.17152 4 6.49995 4.67157 6.49995 5.5C6.49995 6.32843 7.17152 7 7.99995 7Z" fill="#000000"></path> <path d="M7 16H6C3.23858 16 1 13.7614 1 11V10H2C4.76142 10 7 12.2386 7 15V16Z" fill="#000000"></path> <path d="M10 16H9V15C9 12.2386 11.2386 10 14 10H15V11C15 13.7614 12.7614 16 10 16Z" fill="#000000"></path> </g></svg>
+                    <h1 class="text-xl font-bold text-gray-900">Blog của tôi</h1>
                 </div>
                 <nav class="flex space-x-4">
                     <button onclick="switchTab('list')" id="tab-list" class="px-3 py-2 rounded-md text-sm font-medium bg-gray-900 text-white transition-colors">Danh sách bài viết</button>
@@ -59,26 +59,42 @@
 
         <!-- Tab: Soạn bài mới -->
         <section id="section-create" class="hidden">
-            <div class="max-w-2xl mx-auto bg-white shadow-sm border border-gray-100 overflow-hidden">
-                <div class="bg-gray-900 px-6 py-4">
-                    <h2 class="text-xl font-bold text-white">Tạo nội dung với AI</h2>
-                </div>
+            <div class="w-[600px] mx-auto bg-white shadow-xl border rounded-[10px] border-gray-100 overflow-hidden">
                 <div class="p-6">
-                    <div class="mb-5">
+                    <div class="mb-5 ">
                         <label for="keyword" class="block text-sm font-medium text-gray-700 mb-2">Từ khóa chủ đề (Keyword)</label>
-                        <input type="text" id="keyword" placeholder="VD: Lợi ích của Yoga buổi sáng..." 
-                            class="w-full px-4 py-3 border border-gray-300 focus:ring-2 focus:ring-gray-900 focus:border-gray-900 outline-none transition-all">
+                        <textarea type="text" id="keyword" placeholder="VD: Lợi ích của Yoga buổi sáng..." 
+                            class="w-full h-[200px] px-4 py-3 border border-gray-300 focus:ring-2 focus:ring-gray-900 focus:border-gray-900 outline-none transition-all"></textarea>
                     </div>
                     
                     <button id="generate-btn" onclick="generatePost()" 
-                        class="w-full bg-gray-900 hover:bg-black text-white font-medium py-3 px-4 flex items-center justify-center gap-2 transition-colors">
+                        class="w-[250px] mx-auto bg-gray-900 hover:bg-black text-white font-medium py-3 px-4 flex items-center justify-center gap-2 transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                         <span>Viết bài ngay</span>
                     </button>
                 </div>
             </div>
-        </section>
+            <div class="mt-8 border-t border-gray-200 pt-6">
+                <h3 class="text-lg font-bold text-gray-900 mb-4">Hoặc tải lên tài liệu (PDF, TXT, DOCX)</h3>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Chọn file tài liệu</label>
+                    <input type="file" id="documentFile" accept=".pdf,.txt,.docx,.doc" 
+                        class="w-full px-3 py-2 border border-gray-300 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-900 file:text-white hover:file:bg-black cursor-pointer">
+                </div>
 
+                <div class="mb-5">
+                    <label for="docPrompt" class="block text-sm font-medium text-gray-700 mb-2">Yêu cầu thêm cho AI (Tùy chọn)</label>
+                    <input type="text" id="docPrompt" placeholder="VD: Tập trung phân tích chương 2..." 
+                        class="w-full px-4 py-3 border border-gray-300 outline-none transition-all">
+                </div>
+
+                <button id="generate-doc-btn" onclick="generatePostFromDoc()" 
+                    class="w-full bg-gray-900 hover:bg-black text-white font-medium py-3 px-4 flex items-center justify-center gap-2 transition-colors">
+                    <span>Tạo bài viết từ tài liệu</span>
+                </button>
+            </div>
+        </section>
     </main>
 
     <!-- Toast Notification -->
@@ -271,6 +287,50 @@
                 btn.innerHTML = originalBtnHtml;
                 btn.disabled = false;
                 btn.classList.remove('opacity-75', 'cursor-not-allowed');
+            }
+        }
+
+        // Hàm gọi API upload file từ Frontend sang Blog Service
+        async function generatePostFromDoc() {
+            const fileInput = document.getElementById('documentFile');
+            const promptInput = document.getElementById('docPrompt');
+            const btn = document.getElementById('generate-doc-btn');
+
+            if (fileInput.files.length === 0) {
+                showToast('Vui lòng chọn một file tài liệu!', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('prompt', promptInput.value);
+
+            const originalText = btn.innerHTML;
+            btn.innerHTML = `Đang phân tích tài liệu và viết bài...`;
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/create-post-from-doc`, {
+                    method: 'POST',
+                    body: formData // Gửi dạng FormData chứa file
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    showToast('Đã tạo bài viết từ tài liệu thành công!', 'success');
+                    fileInput.value = '';
+                    promptInput.value = '';
+                    setTimeout(() => switchTab('list'), 500);
+                } else {
+                    showToast(data.message || 'Có lỗi xảy ra', 'error');
+                }
+            } catch (error) {
+                showToast('Không thể kết nối tới Blog Service!', 'error');
+                console.error(error);
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
             }
         }
 
