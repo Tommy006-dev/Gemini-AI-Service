@@ -6,13 +6,11 @@
     <title>Blog Dashboard - AI Core</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Tùy chỉnh màu nền trang giống màu be trong ảnh mẫu */
         body { background-color: #fdfaf0; }
     </style>
 </head>
 <body class="min-h-screen font-sans">
 
-    <!-- Header & Navigation -->
     <header class="bg-white shadow-sm sticky top-0 z-40 mb-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16 items-center">
@@ -45,9 +43,7 @@
                 <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
             </div>
 
-            <!-- Lưới hiển thị dạng masonry hoặc grid (ở đây dùng grid tự co giãn giống ảnh) -->
             <div id="posts-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <!-- Data will be rendered here -->
             </div>
             
             <div id="empty-state" class="hidden text-center py-16 bg-white shadow-sm border border-gray-100">
@@ -59,40 +55,129 @@
 
         <!-- Tab: Soạn bài mới -->
         <section id="section-create" class="hidden">
-            <div class="w-[600px] mx-auto bg-white shadow-xl border rounded-[10px] border-gray-100 overflow-hidden">
-                <div class="p-6">
-                    <div class="mb-5 ">
+            
+            <!-- BẢNG GIÁM SÁT TÍCH HỢP SOA & AI CACHE (DÀNH CHO DEMO) -->
+            <div class="max-w-4xl mx-auto mb-8 bg-white shadow-md border border-gray-200 rounded-xl overflow-hidden">
+                <div class="bg-gray-900 text-white px-6 py-4 flex flex-wrap justify-between items-center gap-4">
+                    <div>
+                        <h3 class="text-base font-bold flex items-center gap-2">
+                            <span>Bảng Giám Sát Tích Hợp SOA & Tối Ưu AI Cache / Token</span>
+                        </h3>
+                        <p class="text-xs text-gray-300 mt-0.5">Luồng: Frontend ➔ Blog Service (:8000) ➔ AI Microservice (:8001) ➔ [Cache Layer] ➔ Gemini API</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <label class="flex items-center gap-2 cursor-pointer text-sm bg-gray-800 px-3 py-1.5 rounded-lg border border-gray-700">
+                            <input type="checkbox" id="useCacheToggle" checked class="w-4 h-4 accent-green-500 rounded cursor-pointer">
+                            <span class="font-medium text-green-400">Bật AI Cache</span>
+                        </label>
+                        <button onclick="clearAiCache()" class="text-xs bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg font-medium transition-colors">
+                            Xóa Cache
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Kết quả lần gọi API gần nhất -->
+                <div id="last-call-banner" class="hidden px-6 py-4 border-b border-gray-200 bg-gray-50">
+                    <div class="flex flex-wrap items-center justify-between gap-3">
+                        <div class="flex items-center gap-3">
+                            <span id="last-cache-badge" class="px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-blue-100 text-blue-800">
+                                CACHE MISS
+                            </span>
+                            <span id="last-cache-desc" class="text-sm font-semibold text-gray-800">
+                                Đã gọi Gemini API và lưu vào bộ nhớ đệm
+                            </span>
+                        </div>
+                        <div class="flex items-center gap-4 text-sm">
+                            <span class="text-gray-600">Thời gian: <strong id="last-latency" class="text-gray-900">0 ms</strong></span>
+                            <span class="text-gray-600">Token tiêu thụ: <strong id="last-tokens-used" class="text-blue-700">0</strong></span>
+                            <span class="text-gray-600">Token tiết kiệm: <strong id="last-tokens-saved" class="text-green-600">+0</strong></span>
+                            <button onclick="switchTab('list')" class="text-xs bg-gray-900 text-white px-3 py-1.5 rounded hover:bg-black transition-colors">
+                                Xem bài viết vừa tạo ➔
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4 Ô chỉ số thống kê tổng hợp -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 divide-x divide-y sm:divide-y-0 divide-gray-100 bg-white">
+                    <div class="p-4 text-center">
+                        <p class="text-xs text-gray-500 uppercase font-semibold">Tổng Request AI</p>
+                        <p id="stat-total-req" class="text-2xl font-extrabold text-gray-900 mt-1">0</p>
+                        <p id="stat-api-calls" class="text-xs text-gray-400 mt-0.5">Gọi Gemini thật: 0</p>
+                    </div>
+                    <div class="p-4 text-center">
+                        <p class="text-xs text-gray-500 uppercase font-semibold">Response Cache Hit</p>
+                        <p id="stat-cache-hits" class="text-2xl font-extrabold text-green-600 mt-1">0</p>
+                        <p id="stat-file-hits" class="text-xs text-gray-400 mt-0.5">File URI Cache Hit: 0</p>
+                    </div>
+                    <div class="p-4 text-center">
+                        <p class="text-xs text-gray-500 uppercase font-semibold">Token Đã Dùng</p>
+                        <p id="stat-tokens-used" class="text-2xl font-extrabold text-blue-600 mt-1">0</p>
+                        <p class="text-xs text-gray-400 mt-0.5">Tính trên Gemini API</p>
+                    </div>
+                    <div class="p-4 text-center">
+                        <p class="text-xs text-gray-500 uppercase font-semibold">Token Tiết Kiệm</p>
+                        <p id="stat-tokens-saved" class="text-2xl font-extrabold text-emerald-600 mt-1">0</p>
+                        <p class="text-xs text-gray-400 mt-0.5">Nhờ cơ chế Caching</p>
+                    </div>
+                </div>
+
+                <!-- Danh sách các mục đang nằm trong Cache -->
+                <div class="px-6 py-3 bg-gray-50 border-t border-gray-100 text-xs text-gray-600 flex flex-wrap justify-between items-center gap-2">
+                    <div>
+                        <strong>Bộ nhớ đệm hiện tại:</strong>
+                        <span id="cache-items-summary" class="ml-1 text-gray-500">Chưa có dữ liệu trong cache</span>
+                    </div>
+                    <button onclick="fetchCacheStats()" class="text-indigo-600 hover:underline font-medium">Làm mới thống kê</button>
+                </div>
+            </div>
+
+            <!-- Khu vực 1: Text Generation + Structured Output -->
+            <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white shadow-xl border rounded-[10px] border-gray-100 overflow-hidden p-6 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-xs font-bold uppercase px-2.5 py-1 bg-gray-100 text-gray-800 rounded">1. Text Generation + Structured JSON</span>
+                            <span class="text-xs text-gray-400">gemini-3.5-flash-lite</span>
+                        </div>
                         <label for="keyword" class="block text-sm font-medium text-gray-700 mb-2">Từ khóa chủ đề (Keyword)</label>
                         <textarea type="text" id="keyword" placeholder="VD: Lợi ích của Yoga buổi sáng..." 
-                            class="w-full h-[200px] px-4 py-3 border border-gray-300 focus:ring-2 focus:ring-gray-900 focus:border-gray-900 outline-none transition-all"></textarea>
+                            class="w-full h-[180px] px-4 py-3 border border-gray-300 focus:ring-2 focus:ring-gray-900 focus:border-gray-900 outline-none transition-all rounded-md"></textarea>
                     </div>
                     
                     <button id="generate-btn" onclick="generatePost()" 
-                        class="w-[250px] mx-auto bg-gray-900 hover:bg-black text-white font-medium py-3 px-4 flex items-center justify-center gap-2 transition-colors">
+                        class="mt-4 w-full bg-gray-900 hover:bg-black text-white font-medium py-3 px-4 flex items-center justify-center gap-2 transition-colors rounded-md">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                         <span>Viết bài ngay</span>
                     </button>
                 </div>
-            </div>
-            <div class="mt-8 border-t border-gray-200 pt-6">
-                <h3 class="text-lg font-bold text-gray-900 mb-4">Hoặc tải lên tài liệu (PDF, TXT, DOCX)</h3>
-                
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Chọn file tài liệu</label>
-                    <input type="file" id="documentFile" accept=".pdf,.txt,.docx,.doc" 
-                        class="w-full px-3 py-2 border border-gray-300 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-900 file:text-white hover:file:bg-black cursor-pointer">
-                </div>
 
-                <div class="mb-5">
-                    <label for="docPrompt" class="block text-sm font-medium text-gray-700 mb-2">Yêu cầu thêm cho AI (Tùy chọn)</label>
-                    <input type="text" id="docPrompt" placeholder="VD: Tập trung phân tích chương 2..." 
-                        class="w-full px-4 py-3 border border-gray-300 outline-none transition-all">
-                </div>
+                <!-- Khu vực 2: Document Analysis + Structured Output -->
+                <div class="bg-white shadow-xl border rounded-[10px] border-gray-100 overflow-hidden p-6 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-xs font-bold uppercase px-2.5 py-1 bg-gray-100 text-gray-800 rounded">2. Document Analysis + File Cache</span>
+                            <span class="text-xs text-gray-400">gemini-3.5-flash</span>
+                        </div>
+                        <h3 class="text-sm font-medium text-gray-700 mb-2">Tải lên tài liệu (PDF, TXT, DOCX)</h3>
+                        
+                        <div class="mb-4">
+                            <input type="file" id="documentFile" accept=".pdf,.txt,.docx,.doc" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-900 file:text-white hover:file:bg-black cursor-pointer">
+                        </div>
 
-                <button id="generate-doc-btn" onclick="generatePostFromDoc()" 
-                    class="w-full bg-gray-900 hover:bg-black text-white font-medium py-3 px-4 flex items-center justify-center gap-2 transition-colors">
-                    <span>Tạo bài viết từ tài liệu</span>
-                </button>
+                        <div class="mb-4">
+                            <label for="docPrompt" class="block text-sm font-medium text-gray-700 mb-2">Yêu cầu thêm cho AI (Thử đổi câu hỏi trên cùng 1 file để test File Cache)</label>
+                            <input type="text" id="docPrompt" placeholder="VD: Tập trung phân tích chương 2..." 
+                                class="w-full px-4 py-3 border border-gray-300 rounded-md outline-none transition-all">
+                        </div>
+                    </div>
+
+                    <button id="generate-doc-btn" onclick="generatePostFromDoc()" 
+                        class="mt-4 w-full bg-gray-900 hover:bg-black text-white font-medium py-3 px-4 flex items-center justify-center gap-2 transition-colors rounded-md">
+                        <span>Tạo bài viết từ tài liệu</span>
+                    </button>
+                </div>
             </div>
         </section>
     </main>
@@ -128,6 +213,8 @@
                 
                 tabCreate.className = "px-3 py-2 rounded-md text-sm font-medium bg-gray-900 text-white transition-colors";
                 tabList.className = "px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors";
+                
+                fetchCacheStats();
             }
         }
 
@@ -147,7 +234,77 @@
             toast.classList.remove('translate-y-20', 'opacity-0');
             setTimeout(() => {
                 toast.classList.add('translate-y-20', 'opacity-0');
-            }, 3000);
+            }, 3500);
+        }
+
+        function renderLastCallMeta(meta) {
+            if (!meta) return;
+            const banner = document.getElementById('last-call-banner');
+            const badge = document.getElementById('last-cache-badge');
+            const desc = document.getElementById('last-cache-desc');
+            const latency = document.getElementById('last-latency');
+            const tokensUsed = document.getElementById('last-tokens-used');
+            const tokensSaved = document.getElementById('last-tokens-saved');
+
+            banner.classList.remove('hidden');
+
+            if (meta.cache_status === 'HIT') {
+                badge.textContent = '⚡ CACHE HIT (0 API CALL)';
+                badge.className = 'px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-green-100 text-green-800';
+            } else if (meta.cache_status === 'PARTIAL_HIT') {
+                badge.textContent = '📄 FILE CACHE HIT';
+                badge.className = 'px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-amber-100 text-amber-800';
+            } else {
+                badge.textContent = '🌐 CACHE MISS (GEMINI API)';
+                badge.className = 'px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-blue-100 text-blue-800';
+            }
+
+            desc.textContent = meta.cache_type || '';
+            latency.textContent = `${meta.latency_ms ?? 0} ms`;
+            tokensUsed.textContent = meta.tokens_used ?? 0;
+            tokensSaved.textContent = `+${meta.tokens_saved ?? 0}`;
+        }
+
+        async function fetchCacheStats() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/cache-stats`);
+                const data = await response.json();
+                if (data.status === 'success' && data.metrics) {
+                    const m = data.metrics;
+                    document.getElementById('stat-total-req').textContent = m.total_requests;
+                    document.getElementById('stat-api-calls').textContent = `Gọi Gemini thật: ${m.gemini_api_calls}`;
+                    document.getElementById('stat-cache-hits').textContent = m.response_cache_hits;
+                    document.getElementById('stat-file-hits').textContent = `File URI Cache Hit: ${m.file_cache_hits}`;
+                    document.getElementById('stat-tokens-used').textContent = m.total_tokens_used.toLocaleString();
+                    document.getElementById('stat-tokens-saved').textContent = m.total_tokens_saved.toLocaleString();
+
+                    const summaryEl = document.getElementById('cache-items-summary');
+                    const respCount = data.cached_responses_count || 0;
+                    const fileCount = data.cached_files_count || 0;
+                    if (respCount === 0 && fileCount === 0) {
+                        summaryEl.textContent = "Chưa có dữ liệu trong cache";
+                    } else {
+                        const topics = (data.cached_items || []).map(i => `"${i.topic}"`).join(', ');
+                        summaryEl.textContent = `${respCount} bài viết & ${fileCount} file URI đang lưu (${topics})`;
+                    }
+                }
+            } catch (err) {
+                console.error("Không thể tải thống kê cache:", err);
+            }
+        }
+
+        async function clearAiCache() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/cache-clear`, { method: 'DELETE' });
+                const data = await response.json();
+                if (data.status === 'success') {
+                    showToast(data.message || 'Đã xóa bộ nhớ Cache!', 'success');
+                    document.getElementById('last-call-banner').classList.add('hidden');
+                    fetchCacheStats();
+                }
+            } catch (err) {
+                showToast('Lỗi khi xóa Cache!', 'error');
+            }
         }
 
         function openInNewTab(index) {
@@ -251,6 +408,7 @@
         async function generatePost() {
             const keywordInput = document.getElementById('keyword');
             const keyword = keywordInput.value.trim();
+            const useCache = document.getElementById('useCacheToggle').checked;
             const btn = document.getElementById('generate-btn');
             
             if (!keyword) {
@@ -260,7 +418,7 @@
             }
 
             const originalBtnHtml = btn.innerHTML;
-            btn.innerHTML = `AI đang suy nghĩ...`;
+            btn.innerHTML = `AI đang xử lý...`;
             btn.disabled = true;
             btn.classList.add('opacity-75', 'cursor-not-allowed');
 
@@ -268,15 +426,18 @@
                 const response = await fetch(`${API_BASE_URL}/create-post`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ keyword: keyword })
+                    body: JSON.stringify({ keyword: keyword, use_cache: useCache })
                 });
 
                 const data = await response.json();
 
                 if (data.status === 'success') {
-                    showToast('Đã tạo và lưu bài viết thành công!', 'success');
-                    keywordInput.value = ''; 
-                    setTimeout(() => switchTab('list'), 500); 
+                    renderLastCallMeta(data.meta);
+                    fetchCacheStats();
+                    const hitStatus = data.meta && data.meta.cache_status === 'HIT'
+                        ? `⚡ CACHE HIT (${data.meta.latency_ms}ms - Tiết kiệm ${data.meta.tokens_saved} tokens)`
+                        : `🌐 Đã gọi Gemini API (${data.meta ? data.meta.latency_ms : 0}ms)`;
+                    showToast(`Tạo bài thành công! ${hitStatus}`, 'success');
                 } else {
                     showToast(data.message || 'Có lỗi xảy ra từ Server', 'error');
                 }
@@ -290,10 +451,10 @@
             }
         }
 
-        // Hàm gọi API upload file từ Frontend sang Blog Service
         async function generatePostFromDoc() {
             const fileInput = document.getElementById('documentFile');
             const promptInput = document.getElementById('docPrompt');
+            const useCache = document.getElementById('useCacheToggle').checked;
             const btn = document.getElementById('generate-doc-btn');
 
             if (fileInput.files.length === 0) {
@@ -304,6 +465,7 @@
             const formData = new FormData();
             formData.append('file', fileInput.files[0]);
             formData.append('prompt', promptInput.value);
+            formData.append('use_cache', useCache);
 
             const originalText = btn.innerHTML;
             btn.innerHTML = `Đang phân tích tài liệu và viết bài...`;
@@ -312,16 +474,18 @@
             try {
                 const response = await fetch(`${API_BASE_URL}/create-post-from-doc`, {
                     method: 'POST',
-                    body: formData // Gửi dạng FormData chứa file
+                    body: formData 
                 });
 
                 const data = await response.json();
 
                 if (data.status === 'success') {
-                    showToast('Đã tạo bài viết từ tài liệu thành công!', 'success');
-                    fileInput.value = '';
-                    promptInput.value = '';
-                    setTimeout(() => switchTab('list'), 500);
+                    renderLastCallMeta(data.meta);
+                    fetchCacheStats();
+                    const hitStatus = data.meta && data.meta.cache_status === 'HIT'
+                        ? `⚡ CACHE HIT (${data.meta.latency_ms}ms)`
+                        : (data.meta && data.meta.cache_status === 'PARTIAL_HIT' ? `📄 Tái sử dụng File URI Cache (${data.meta.latency_ms}ms)` : `🌐 Đã upload & phân tích (${data.meta ? data.meta.latency_ms : 0}ms)`);
+                    showToast(`Tạo bài từ tài liệu thành công! ${hitStatus}`, 'success');
                 } else {
                     showToast(data.message || 'Có lỗi xảy ra', 'error');
                 }

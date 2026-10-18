@@ -17,19 +17,24 @@ app.add_middleware(
 
 class KeywordRequest(BaseModel):
     keyword: str
+    use_cache: bool = True
 
 @app.post("/api/create-post")
 async def create_post(request: KeywordRequest):
     try:
         # Gọi sang AI Microservice bằng HTTPX
         async with httpx.AsyncClient(timeout=30.0) as client:
-            ai_response = await client.post("http://localhost:8001/ai-service/generate", json={"keyword": request.keyword})
+            ai_response = await client.post(
+                "http://localhost:8001/ai-service/generate",
+                json={"keyword": request.keyword, "use_cache": request.use_cache}
+            )
             ai_data = ai_response.json()
 
         if ai_data.get("status") != "success":
             raise HTTPException(status_code=500, detail="Lỗi từ AI Service: " + ai_data.get("message", ""))
 
         article = ai_data["data"]
+        meta = ai_data.get("meta", {})
 
         # Lưu dữ liệu vào SQLite
         conn = sqlite3.connect('blog.db')
@@ -44,18 +49,26 @@ async def create_post(request: KeywordRequest):
         conn.commit()
         conn.close()
 
-        return {"status": "success", "message": "Đã tạo và lưu bài viết thành công!"}
+        return {
+            "status": "success",
+            "message": "Đã tạo và lưu bài viết thành công!",
+            "meta": meta
+        }
     except Exception as e:
         return {"status": "error", "message": str(e)}
 
 
 @app.post("/api/create-post-from-doc")
-async def create_post_from_doc(file: UploadFile = File(...), prompt: str = Form(default="")):
+async def create_post_from_doc(
+    file: UploadFile = File(...),
+    prompt: str = Form(default=""),
+    use_cache: bool = Form(default=True)
+):
     try:
         file_bytes = await file.read()
         
         files = {'file': (file.filename, file_bytes, file.content_type)}
-        data = {'prompt_addition': prompt}
+        data = {'prompt_addition': prompt, 'use_cache': str(use_cache).lower()}
 
         # Gọi sang AI Microservice bằng HTTPX
         async with httpx.AsyncClient(timeout=60.0) as client:
@@ -66,6 +79,7 @@ async def create_post_from_doc(file: UploadFile = File(...), prompt: str = Form(
             raise HTTPException(status_code=500, detail="Lỗi từ AI Service: " + ai_data.get("message", ""))
 
         article = ai_data["data"]
+        meta = ai_data.get("meta", {})
 
         # Lưu dữ liệu vào SQLite
         conn = sqlite3.connect('blog.db')
@@ -80,7 +94,31 @@ async def create_post_from_doc(file: UploadFile = File(...), prompt: str = Form(
         conn.commit()
         conn.close()
 
-        return {"status": "success", "message": "Đã tạo và lưu bài viết thành công!"}
+        return {
+            "status": "success",
+            "message": "Đã tạo và lưu bài viết thành công!",
+            "meta": meta
+        }
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+@app.get("/api/cache-stats")
+async def get_cache_stats():
+    """Lấy thống kê Cache & Token từ AI Microservice"""
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            res = await client.get("http://localhost:8001/ai-service/cache-stats")
+            return res.json()
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+@app.delete("/api/cache-clear")
+async def clear_cache():
+    """Gửi lệnh xóa Cache sang AI Microservice"""
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            res = await client.delete("http://localhost:8001/ai-service/cache-clear")
+            return res.json()
     except Exception as e:
         return {"status": "error", "message": str(e)}
 

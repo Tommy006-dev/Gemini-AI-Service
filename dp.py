@@ -19,7 +19,7 @@ def init_db():
 
     conn.commit()
     conn.close()
-    print("✅ Đã khởi tạo Database 'blog.db' và bảng 'blog_posts' thành công!")
+    print("Đã khởi tạo Database 'blog.db' và bảng 'blog_posts' thành công!")
 
 if __name__ == '__main__':
     init_db()
