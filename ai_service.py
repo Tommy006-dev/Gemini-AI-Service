@@ -212,7 +212,7 @@ async def generate_from_doc(
             file_cache_status = "HIT (Tái sử dụng File URI trên Gemini)"
             CACHE_METRICS["file_cache_hits"] += 1
         else:
-            # Upload file lên Gemini (Giữ nguyên cú pháp cũ)
+            # Upload file lên Gemini
             file_stream = io.BytesIO(file_bytes)
             uploaded_file = client.files.upload(
                 file=file_stream,
