@@ -7,9 +7,12 @@ from pydantic import BaseModel
 from google import genai
 from fastapi import FastAPI, UploadFile, File, Form
 
+<<<<<<< HEAD
 from collections import deque
 from datetime import datetime, timedelta
 
+=======
+>>>>>>> 49386415f2b32fd2115aa057de29c9deda5b7c14
 load_dotenv()
 
 app = FastAPI(title="Gemini AI Microservice (with Caching)")
@@ -121,10 +124,15 @@ async def generate_content(request: KeywordRequest):
         Nội dung (html_content) phải dùng thẻ HTML cơ bản (<h2>, <p>, <ul>...)."""
         full_input = f"{prompt}\nChủ đề: {request.keyword}"
 
+<<<<<<< HEAD
         check_limits(MODEL_TEXT, len(full_input) // 4)  # [RATE LIMIT] chặn nếu đã chạm hạn mức
         record_request(MODEL_TEXT)  # [RATE LIMIT]
         interaction = client.interactions.create(
             model=MODEL_TEXT,
+=======
+        interaction = client.interactions.create(
+            model="gemini-3.5-flash-lite",
+>>>>>>> 49386415f2b32fd2115aa057de29c9deda5b7c14
             input=full_input,
             response_format={
                 "type": "text",
@@ -138,7 +146,10 @@ async def generate_content(request: KeywordRequest):
 
         # Tính toán Token & Lưu vào Cache
         token_usage = extract_token_usage(interaction, full_input, interaction.output_text)
+<<<<<<< HEAD
         record_tokens(MODEL_TEXT, token_usage["input_tokens"])  # [RATE LIMIT]
+=======
+>>>>>>> 49386415f2b32fd2115aa057de29c9deda5b7c14
         CACHE_METRICS["gemini_api_calls"] += 1
         CACHE_METRICS["total_tokens_used"] += token_usage["total_tokens"]
 
@@ -165,7 +176,11 @@ async def generate_content(request: KeywordRequest):
             },
         }
     except Exception as e:
+<<<<<<< HEAD
         return handle_ai_error(e, MODEL_TEXT)
+=======
+        return {"status": "error", "message": str(e)}
+>>>>>>> 49386415f2b32fd2115aa057de29c9deda5b7c14
 
 
 @app.post("/ai-service/generate-from-doc")
@@ -209,9 +224,12 @@ async def generate_from_doc(
                 },
             }
 
+<<<<<<< HEAD
         # [RATE LIMIT] Cache miss -> sắp tốn quota Gemini, chặn trước nếu đã chạm hạn mức
         check_limits(MODEL_DOC, max(len(file_bytes) // 2, 500) // 4)
 
+=======
+>>>>>>> 49386415f2b32fd2115aa057de29c9deda5b7c14
         # 2. KIỂM TRA FILE UPLOAD CACHE (Cùng file tài liệu nhưng yêu cầu/prompt khác)
         #    Giúp tái sử dụng URI trên Gemini mà không phải upload lại file tốn băng thông & API
         if use_cache and file_hash in FILE_CACHE:
@@ -245,9 +263,14 @@ async def generate_from_doc(
         Nội dung (html_content) phải dùng thẻ HTML cơ bản (<h2>, <p>, <ul>...). Trả về định dạng JSON đúng chuẩn Schema."""
 
         # Gọi Gemini Interactions API
+<<<<<<< HEAD
         record_request(MODEL_DOC)  # [RATE LIMIT]
         interaction = client.interactions.create(
             model=MODEL_DOC,
+=======
+        interaction = client.interactions.create(
+            model="gemini-3.5-flash",
+>>>>>>> 49386415f2b32fd2115aa057de29c9deda5b7c14
             input=[
                 {
                     "type": "document",
@@ -276,7 +299,10 @@ async def generate_from_doc(
             " " * doc_estimated_chars + system_prompt + prompt_addition,
             interaction.output_text,
         )
+<<<<<<< HEAD
         record_tokens(MODEL_DOC, token_usage["input_tokens"])  # [RATE LIMIT]
+=======
+>>>>>>> 49386415f2b32fd2115aa057de29c9deda5b7c14
         google_implicit_cached = token_usage.get("cached_tokens", 0)
         # Nếu Google Implicit Cache kích hoạt (cached_tokens > 0) hoặc File URI được tái sử dụng từ Cache
         estimated_doc_tokens_saved = (
@@ -316,7 +342,11 @@ async def generate_from_doc(
         }
 
     except Exception as e:
+<<<<<<< HEAD
         return handle_ai_error(e, MODEL_DOC)
+=======
+        return {"status": "error", "message": str(e)}
+>>>>>>> 49386415f2b32fd2115aa057de29c9deda5b7c14
         
 
 
@@ -326,7 +356,10 @@ async def get_cache_stats():
     return {
         "status": "success",
         "metrics": CACHE_METRICS,
+<<<<<<< HEAD
         "rate_usage": get_rate_usage(),  # [RATE LIMIT]
+=======
+>>>>>>> 49386415f2b32fd2115aa057de29c9deda5b7c14
         "cached_responses_count": len(RESPONSE_CACHE),
         "cached_files_count": len(FILE_CACHE),
         "cached_items": [
@@ -357,6 +390,7 @@ async def clear_cache():
     for k in CACHE_METRICS:
         CACHE_METRICS[k] = 0
     return {"status": "success", "message": "Đã xóa toàn bộ AI Cache và đặt lại bộ đếm Token!"}
+<<<<<<< HEAD
 
 # ======================= [RATE LIMIT] Đếm RPM / TPM / RPD =======================
 # Gemini tính hạn mức THEO TỪNG MODEL nên ta đếm riêng cho từng model.
@@ -525,3 +559,5 @@ def handle_ai_error(e: Exception, model: str) -> dict:
                 "retry_after": wait}
 
     return {"status": "error", "message": msg}
+=======
+>>>>>>> 49386415f2b32fd2115aa057de29c9deda5b7c14
