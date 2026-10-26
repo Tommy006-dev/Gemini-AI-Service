@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog Dashboard - AI Core</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #fdfaf0; }
+    </style>
+</head>
+<body class="min-h-screen font-sans">
+
+    <header class="bg-white shadow-sm sticky top-0 z-40 mb-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center gap-2">
+                    <svg class="w-8 h-8 text-gray-900" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path fill-rule="evenodd" clip-rule="evenodd" d="M8 0C6.89543 0 6 0.895431 6 2V2.0359L5.96891 2.01795C5.01233 1.46566 3.78915 1.79341 3.23686 2.75C2.68458 3.70659 3.01233 4.92977 3.96891 5.48205L4 5.5L3.96891 5.51795C3.01233 6.07023 2.68458 7.29342 3.23686 8.25C3.78915 9.20658 5.01233 9.53434 5.96891 8.98205L6 8.9641V9C6 10.1046 6.89543 11 8 11C9.10457 11 10 10.1046 10 9V8.9641L10.0311 8.98205C10.9877 9.53434 12.2109 9.20658 12.7631 8.25C13.3154 7.29342 12.9877 6.07023 12.0311 5.51795L12 5.5L12.0311 5.48205C12.9877 4.92977 13.3154 3.70659 12.7631 2.75C12.2109 1.79341 10.9877 1.46566 10.0311 2.01795L10 2.0359V2C10 0.895431 9.10457 0 8 0ZM7.99995 7C8.82838 7 9.49995 6.32843 9.49995 5.5C9.49995 4.67157 8.82838 4 7.99995 4C7.17152 4 6.49995 4.67157 6.49995 5.5C6.49995 6.32843 7.17152 7 7.99995 7Z" fill="#000000"></path> <path d="M7 16H6C3.23858 16 1 13.7614 1 11V10H2C4.76142 10 7 12.2386 7 15V16Z" fill="#000000"></path> <path d="M10 16H9V15C9 12.2386 11.2386 10 14 10H15V11C15 13.7614 12.7614 16 10 16Z" fill="#000000"></path> </g></svg>
+                    <h1 class="text-xl font-bold text-gray-900">Blog của tôi</h1>
+                </div>
+                <nav class="flex space-x-4">
+                    <button onclick="switchTab('list')" id="tab-list" class="px-3 py-2 rounded-md text-sm font-medium bg-gray-900 text-white transition-colors">Danh sách bài viết</button>
+                    <button onclick="switchTab('create')" id="tab-create" class="px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors">Soạn bài mới</button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+        
+        <!-- Tab: Danh sách bài viết -->
+        <section id="section-list" class="block">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">Bài viết mới nhất</h2>
+                <button onclick="fetchPosts()" class="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    Làm mới
+                </button>
+            </div>
+            
+            <div id="loading-posts" class="hidden justify-center py-12">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+            </div>
+
+            <div id="posts-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            </div>
+            
+            <div id="empty-state" class="hidden text-center py-16 bg-white shadow-sm border border-gray-100">
+                <h3 class="mt-2 text-sm font-medium text-gray-900">Chưa có bài viết nào</h3>
+                <p class="mt-1 text-sm text-gray-500">Hãy chuyển sang tab "Soạn bài mới" để tạo bài viết đầu tiên.</p>
+                <button onclick="switchTab('create')" class="mt-4 px-4 py-2 bg-gray-900 text-white text-sm hover:bg-gray-800 transition-colors">Soạn ngay</button>
+            </div>
+        </section>
+
+        <!-- Tab: Soạn bài mới -->
+        <section id="section-create" class="hidden">
+            
+            <!-- BẢNG GIÁM SÁT TÍCH HỢP SOA & AI CACHE (DÀNH CHO DEMO) -->
+            <div class="max-w-4xl mx-auto mb-8 bg-white shadow-md border border-gray-200 rounded-xl overflow-hidden">
+                <div class="bg-gray-900 text-white px-6 py-4 flex flex-wrap justify-between items-center gap-4">
+                    <div>
+                        <h3 class="text-base font-bold flex items-center gap-2">
+                            <span>Bảng Giám Sát Tích Hợp SOA & Tối Ưu AI Cache / Token</span>
+                        </h3>
+                        <p class="text-xs text-gray-300 mt-0.5">Luồng: Frontend ➔ Blog Service (:8000) ➔ AI Serivce (:8001) ➔ [Cache Layer] ➔ Gemini API</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <label class="flex items-center gap-2 cursor-pointer text-sm bg-gray-800 px-3 py-1.5 rounded-lg border border-gray-700">
+                            <input type="checkbox" id="useCacheToggle" checked class="w-4 h-4 accent-green-500 rounded cursor-pointer">
+                            <span class="font-medium text-green-400">Bật AI Cache</span>
+                        </label>
+                        <button onclick="clearAiCache()" class="text-xs bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg font-medium transition-colors">
+                            Xóa Cache
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Kết quả lần gọi API gần nhất -->
+                <div id="last-call-banner" class="hidden px-6 py-4 border-b border-gray-200 bg-gray-50">
+                    <div class="flex flex-wrap items-center justify-between gap-3">
+                        <div class="flex items-center gap-3">
+                            <span id="last-cache-badge" class="px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-blue-100 text-blue-800">
+                                CACHE MISS
+                            </span>
+                            <span id="last-cache-desc" class="text-sm font-semibold text-gray-800">
+                                Đã gọi Gemini API và lưu vào bộ nhớ đệm
+                            </span>
+                        </div>
+                        <div class="flex items-center gap-4 text-sm">
+                            <span class="text-gray-600">Thời gian: <strong id="last-latency" class="text-gray-900">0 ms</strong></span>
+                            <span class="text-gray-600">Token tiêu thụ: <strong id="last-tokens-used" class="text-blue-700">0</strong></span>
+                            <span class="text-gray-600">Token tiết kiệm: <strong id="last-tokens-saved" class="text-green-600">+0</strong></span>
+                            <button onclick="switchTab('list')" class="text-xs bg-gray-900 text-white px-3 py-1.5 rounded hover:bg-black transition-colors">
+                                Xem bài viết vừa tạo ➔
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4 Ô chỉ số thống kê tổng hợp -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 divide-x divide-y sm:divide-y-0 divide-gray-100 bg-white">
+                    <div class="p-4 text-center">
+                        <p class="text-xs text-gray-500 uppercase font-semibold">Tổng Request AI</p>
+                        <p id="stat-total-req" class="text-2xl font-extrabold text-gray-900 mt-1">0</p>
+                        <p id="stat-api-calls" class="text-xs text-gray-400 mt-0.5">Gọi Gemini thật: 0</p>
+                    </div>
+                    <div class="p-4 text-center">
+                        <p class="text-xs text-gray-500 uppercase font-semibold">Response Cache Hit</p>
+                        <p id="stat-cache-hits" class="text-2xl font-extrabold text-green-600 mt-1">0</p>
+                        <p id="stat-file-hits" class="text-xs text-gray-400 mt-0.5">File URI Cache Hit: 0</p>
+                    </div>
+                    <div class="p-4 text-center">
+                        <p class="text-xs text-gray-500 uppercase font-semibold">Token Đã Dùng</p>
+                        <p id="stat-tokens-used" class="text-2xl font-extrabold text-blue-600 mt-1">0</p>
+                        <p class="text-xs text-gray-400 mt-0.5">Tính trên Gemini API</p>
+                    </div>
+                    <div class="p-4 text-center">
+                        <p class="text-xs text-gray-500 uppercase font-semibold">Token Tiết Kiệm</p>
+                        <p id="stat-tokens-saved" class="text-2xl font-extrabold text-emerald-600 mt-1">0</p>
+                        <p class="text-xs text-gray-400 mt-0.5">Nhờ cơ chế Caching</p>
+                    </div>
+                </div>
+
+                <!-- ===== [RATE LIMIT] Bảng RPM / TPM / RPD + cảnh báo ===== -->
+                <div class="px-6 py-4 border-t border-gray-100 bg-white">
+                    <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+                        <h4 class="text-sm font-bold text-gray-800">Giới hạn sử dụng Gemini API (RPM / TPM / RPD)</h4>
+                        <label class="flex items-center gap-2 text-xs text-gray-600">
+                            Cảnh báo khi dùng đạt
+                            <select id="warnThreshold" onchange="onWarnThresholdChange(this.value)" class="border border-gray-300 rounded px-2 py-1 text-xs">
+                                <option value="0">Tắt</option>
+                                <option value="50">50%</option>
+                                <option value="70">70%</option>
+                                <option value="80">80%</option>
+                                <option value="90">90%</option>
+                                <option value="95">95%</option>
+                            </select>
+                            limit
+                        </label>
+                    </div>
+                    <div id="rate-alert" class="hidden mb-3 px-3 py-2 text-xs font-semibold bg-amber-50 border border-amber-300 text-amber-800 rounded"></div>
+                    <div id="rate-usage-container" class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-gray-500">Đang tải...</div>
+                </div>
+
+                <!-- Danh sách các mục đang nằm trong Cache -->
+                <div class="px-6 py-3 bg-gray-50 border-t border-gray-100 text-xs text-gray-600 flex flex-wrap justify-between items-center gap-2">
+                    <div>
+                        <strong>Bộ nhớ đệm hiện tại:</strong>
+                        <span id="cache-items-summary" class="ml-1 text-gray-500">Chưa có dữ liệu trong cache</span>
+                    </div>
+                    <button onclick="fetchCacheStats()" class="text-indigo-600 hover:underline font-medium">Làm mới thống kê</button>
+                </div>
+            </div>
+
+            <!-- Khu vực 1: Text Generation + Structured Output -->
+            <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white shadow-xl border rounded-[10px] border-gray-100 overflow-hidden p-6 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-xs font-bold uppercase px-2.5 py-1 bg-gray-100 text-gray-800 rounded">1. Text Generation + Structured JSON</span>
+                            <span class="text-xs text-gray-400">gemini-3.5-flash-lite</span>
+                        </div>
+                        <label for="keyword" class="block text-sm font-medium text-gray-700 mb-2">Từ khóa chủ đề (Keyword)</label>
+                        <textarea type="text" id="keyword" placeholder="VD: Lợi ích của Yoga buổi sáng..." 
+                            class="w-full h-[180px] px-4 py-3 border border-gray-300 focus:ring-2 focus:ring-gray-900 focus:border-gray-900 outline-none transition-all rounded-md"></textarea>
+                    </div>
+                    
+                    <button id="generate-btn" onclick="generatePost()" 
+                        class="mt-4 w-full bg-gray-900 hover:bg-black text-white font-medium py-3 px-4 flex items-center justify-center gap-2 transition-colors rounded-md">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        <span>Viết bài ngay</span>
+                    </button>
+                </div>
+
+                <!-- Khu vực 2: Document Analysis + Structured Output -->
+                <div class="bg-white shadow-xl border rounded-[10px] border-gray-100 overflow-hidden p-6 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-xs font-bold uppercase px-2.5 py-1 bg-gray-100 text-gray-800 rounded">2. Document Analysis + File Cache</span>
+                            <span class="text-xs text-gray-400">gemini-3.5-flash</span>
+                        </div>
+                        <h3 class="text-sm font-medium text-gray-700 mb-2">Tải lên tài liệu (PDF, TXT, DOCX)</h3>
+                        
+                        <div class="mb-4">
+                            <input type="file" id="documentFile" accept=".pdf,.txt,.docx,.doc" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-900 file:text-white hover:file:bg-black cursor-pointer">
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="docPrompt" class="block text-sm font-medium text-gray-700 mb-2">Yêu cầu thêm cho AI (Thử đổi câu hỏi trên cùng 1 file để test File Cache)</label>
+                            <input type="text" id="docPrompt" placeholder="VD: Tập trung phân tích chương 2..." 
+                                class="w-full px-4 py-3 border border-gray-300 rounded-md outline-none transition-all">
+                        </div>
+                    </div>
+
+                    <button id="generate-doc-btn" onclick="generatePostFromDoc()" 
+                        class="mt-4 w-full bg-gray-900 hover:bg-black text-white font-medium py-3 px-4 flex items-center justify-center gap-2 transition-colors rounded-md">
+                        <span>Tạo bài viết từ tài liệu</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-5 right-5 transform translate-y-20 opacity-0 transition-all duration-300 z-50">
+        <div id="toast-content" class="bg-white px-6 py-4 shadow-lg border-l-4 border-green-500 flex items-center gap-3">
+            <span id="toast-message" class="text-gray-700 font-medium">Thông báo</span>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = "http://localhost:8000/api"; 
+        let globalPosts = []; 
+
+        function switchTab(tabName) {
+            const listSec = document.getElementById('section-list');
+            const createSec = document.getElementById('section-create');
+            const tabList = document.getElementById('tab-list');
+            const tabCreate = document.getElementById('tab-create');
+
+            if (tabName === 'list') {
+                listSec.classList.remove('hidden');
+                createSec.classList.add('hidden');
+                
+                tabList.className = "px-3 py-2 rounded-md text-sm font-medium bg-gray-900 text-white transition-colors";
+                tabCreate.className = "px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors";
+                
+                fetchPosts();
+            } else {
+                listSec.classList.add('hidden');
+                createSec.classList.remove('hidden');
+                
+                tabCreate.className = "px-3 py-2 rounded-md text-sm font-medium bg-gray-900 text-white transition-colors";
+                tabList.className = "px-3 py-2 rounded-md text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors";
+                
+                fetchCacheStats();
+            }
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const msgEl = document.getElementById('toast-message');
+            const content = document.getElementById('toast-content');
+
+            msgEl.textContent = message;
+            
+            if (type === 'success') {
+                content.className = "bg-white px-6 py-4 shadow-lg border-l-4 border-green-500 flex items-center gap-3";
+            } else {
+                content.className = "bg-white px-6 py-4 shadow-lg border-l-4 border-red-500 flex items-center gap-3";
+            }
+
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3500);
+        }
+
+        function renderLastCallMeta(meta) {
+            if (!meta) return;
+            const banner = document.getElementById('last-call-banner');
+            const badge = document.getElementById('last-cache-badge');
+            const desc = document.getElementById('last-cache-desc');
+            const latency = document.getElementById('last-latency');
+            const tokensUsed = document.getElementById('last-tokens-used');
+            const tokensSaved = document.getElementById('last-tokens-saved');
+
+            banner.classList.remove('hidden');
+
+            if (meta.cache_status === 'HIT') {
+                badge.textContent = '⚡ CACHE HIT (0 API CALL)';
+                badge.className = 'px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-green-100 text-green-800';
+            } else if (meta.cache_status === 'PARTIAL_HIT') {
+                badge.textContent = '📄 FILE CACHE HIT';
+                badge.className = 'px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-amber-100 text-amber-800';
+            } else {
+                badge.textContent = '🌐 CACHE MISS (GEMINI API)';
+                badge.className = 'px-3 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider bg-blue-100 text-blue-800';
+            }
+
+            desc.textContent = meta.cache_type || '';
+            latency.textContent = `${meta.latency_ms ?? 0} ms`;
+            tokensUsed.textContent = meta.tokens_used ?? 0;
+            tokensSaved.textContent = `+${meta.tokens_saved ?? 0}`;
+        }
+
+        async function fetchCacheStats() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/cache-stats`);
+                const data = await response.json();
+                if (data.status === 'success' && data.metrics) {
+                    const m = data.metrics;
+                    document.getElementById('stat-total-req').textContent = m.total_requests;
+                    document.getElementById('stat-api-calls').textContent = `Gọi Gemini thật: ${m.gemini_api_calls}`;
+                    document.getElementById('stat-cache-hits').textContent = m.response_cache_hits;
+                    document.getElementById('stat-file-hits').textContent = `File URI Cache Hit: ${m.file_cache_hits}`;
+                    document.getElementById('stat-tokens-used').textContent = m.total_tokens_used.toLocaleString();
+                    document.getElementById('stat-tokens-saved').textContent = m.total_tokens_saved.toLocaleString();
+
+                    const summaryEl = document.getElementById('cache-items-summary');
+                    const respCount = data.cached_responses_count || 0;
+                    const fileCount = data.cached_files_count || 0;
+                    if (respCount === 0 && fileCount === 0) {
+                        summaryEl.textContent = "Chưa có dữ liệu trong cache";
+                    } else {
+                        const topics = (data.cached_items || []).map(i => `"${i.topic}"`).join(', ');
+                        summaryEl.textContent = `${respCount} bài viết & ${fileCount} file URI đang lưu (${topics})`;
+                    }
+
+                    // [RATE LIMIT] vẽ bảng RPM/TPM/RPD
+                    lastRateUsage = data.rate_usage;
+                    renderRateUsage(lastRateUsage);
+                }
+            } catch (err) {
+                console.error("Không thể tải thống kê cache:", err);
+            }
+        }
+
+        // ======================= [RATE LIMIT] RPM / TPM / RPD + cảnh báo =======================
+        const RATE_METRICS = [
+            { key: 'rpm', label: 'RPM', hint: 'request/phút' },
+            { key: 'tpm', label: 'TPM', hint: 'token/phút' },
+            { key: 'rpd', label: 'RPD', hint: 'request/ngày' },
+        ];
+        let warnThreshold = 80;          // % cảnh báo, 0 = tắt
+        try {
+            const saved = localStorage.getItem('warn_threshold');
+            if (saved !== null) warnThreshold = parseInt(saved, 10);
+        } catch (e) {}
+        let lastRateUsage = null;        // dữ liệu mới nhất, dùng để vẽ lại khi đổi ngưỡng
+        let alertedMetrics = {};         // các chỉ số đã toast cảnh báo (tránh báo lặp mỗi 3 giây)
+
+        function onWarnThresholdChange(value) {
+            warnThreshold = parseInt(value, 10);
+            try { localStorage.setItem('warn_threshold', String(warnThreshold)); } catch (e) {}
+            alertedMetrics = {};         // đổi ngưỡng thì cho phép báo lại
+            renderRateUsage(lastRateUsage);
+        }
+
+        function fmtDuration(sec) {
+            const h = Math.floor(sec / 3600);
+            const m = Math.floor((sec % 3600) / 60);
+            return `${h}h ${m}m`;
+        }
+
+        function renderRateUsage(usage) {
+            if (!usage) return;
+            const warnings = [];         // tất cả chỉ số đang vượt ngưỡng (hiện trên banner)
+            const newlyAlerted = [];     // chỉ số vừa vượt ngưỡng lần đầu (hiện toast)
+
+            const html = Object.entries(usage).map(([model, m]) => {
+                const rows = RATE_METRICS.map(({ key, label, hint }) => {
+                    const { used, limit, reset_in } = m[key];
+                    const pct = limit > 0 ? (used / limit) * 100 : 0;
+                    const isWarn = warnThreshold > 0 && pct >= warnThreshold;
+                    const color = pct >= 100 ? 'bg-red-500' : (isWarn ? 'bg-amber-500' : 'bg-green-500');
+                    const id = `${model}:${key}`;
+
+                    if (isWarn) {
+                        warnings.push(`${model} ${label} ${Math.round(pct)}%`);
+                        if (!alertedMetrics[id]) { alertedMetrics[id] = true; newlyAlerted.push(`${model} ${label} ${Math.round(pct)}%`); }
+                    } else {
+                        delete alertedMetrics[id];   // đã xuống dưới ngưỡng (đã reset) -> lần sau báo lại
+                    }
+
+                    let resetText = '—';
+                    if (key === 'rpd') resetText = `Reset sau ${fmtDuration(reset_in)}`;
+                    else if (used > 0) resetText = `Bắt đầu giảm sau ${reset_in}s`;
+
+                    return `
+                    <div class="mb-2">
+                        <div class="flex justify-between">
+                            <span class="font-semibold text-gray-700">${label} <span class="font-normal text-gray-400">(${hint})</span></span>
+                            <span>${used.toLocaleString()} / ${limit.toLocaleString()} (${Math.round(pct)}%)</span>
+                        </div>
+                        <div class="w-full h-2 bg-gray-100 rounded"><div class="h-2 rounded ${color}" style="width:${Math.min(pct, 100)}%"></div></div>
+                        <div class="text-[11px] text-gray-400">${resetText}</div>
+                    </div>`;
+                }).join('');
+                return `<div class="border border-gray-100 rounded-lg p-3"><div class="font-bold text-gray-800 mb-2">${model}</div>${rows}</div>`;
+            }).join('');
+
+            document.getElementById('rate-usage-container').innerHTML = html;
+
+            const banner = document.getElementById('rate-alert');
+            if (warnings.length > 0) {
+                banner.textContent = `⚠️ Sắp chạm giới hạn: ${warnings.join(' · ')}`;
+                banner.classList.remove('hidden');
+            } else {
+                banner.classList.add('hidden');
+            }
+            if (newlyAlerted.length > 0) {
+                showToast(`⚠️ Sắp chạm giới hạn: ${newlyAlerted.join(', ')}`, 'error');
+            }
+        }
+
+        async function clearAiCache() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/cache-clear`, { method: 'DELETE' });
+                const data = await response.json();
+                if (data.status === 'success') {
+                    showToast(data.message || 'Đã xóa bộ nhớ Cache!', 'success');
+                    document.getElementById('last-call-banner').classList.add('hidden');
+                    fetchCacheStats();
+                }
+            } catch (err) {
+                showToast('Lỗi khi xóa Cache!', 'error');
+            }
+        }
+
+        function openInNewTab(index) {
+            const post = globalPosts[index];
+            if (!post) return;
+
+            let tagsArray = [];
+            try {
+                tagsArray = typeof post.tags === 'string' ? JSON.parse(post.tags) : post.tags;
+                if(!Array.isArray(tagsArray) && typeof post.tags === 'string') {
+                    tagsArray = post.tags.split(',').map(t => t.trim());
+                }
+            } catch(e) {
+                tagsArray = typeof post.tags === 'string' ? [post.tags] : [];
+            }
+
+            const postDataToOpen = {
+                title: post.title,
+                content: post.html_content,
+                tags: tagsArray
+            };
+
+            sessionStorage.setItem('current_view_post', JSON.stringify(postDataToOpen));
+            window.open('post_detail.html', '_blank');
+        }
+
+        async function fetchPosts() {
+            const grid = document.getElementById('posts-grid');
+            const emptyState = document.getElementById('empty-state');
+            const loader = document.getElementById('loading-posts');
+            
+            grid.innerHTML = '';
+            emptyState.classList.add('hidden');
+            loader.classList.remove('hidden');
+            loader.classList.add('flex');
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/posts`);
+                const data = await response.json();
+
+                loader.classList.add('hidden');
+                loader.classList.remove('flex');
+
+                if (data.status === 'success' && data.posts && data.posts.length > 0) {
+                    globalPosts = data.posts; 
+
+                    const html = globalPosts.map((post, index) => {
+                        // Lấy tag đầu tiên làm label ở góc trái
+                        let firstTag = "KIẾN THỨC";
+                        try {
+                            let tagsArray = typeof post.tags === 'string' ? JSON.parse(post.tags) : post.tags;
+                            if(!Array.isArray(tagsArray) && typeof post.tags === 'string') {
+                                tagsArray = post.tags.split(',').map(t => t.trim());
+                            }
+                            if (tagsArray && tagsArray.length > 0) {
+                                firstTag = tagsArray[0];
+                            }
+                        } catch(e) {}
+
+                        // Lấy random 1 ảnh từ picsum làm nền (mỗi index sẽ có 1 ảnh cố định)
+                        const coverImage = `https://picsum.photos/seed/${index + 100}/800/600`;
+
+                        // Render cấu trúc thẻ y hệt ảnh mẫu: ảnh nền, gradient làm tối, tag đen chữ trắng, tiêu đề trắng in đậm
+                        return `
+                        <div onclick="openInNewTab(${index})" class="group relative cursor-pointer overflow-hidden aspect-[4/3] bg-gray-200">
+                            <!-- Ảnh nền -->
+                            <img src="${coverImage}" alt="${post.title}" class="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" loading="lazy">
+                            
+                            <!-- Lớp phủ tối màu gradient từ dưới lên để dễ đọc chữ -->
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent"></div>
+                            
+                            <!-- Label góc trên trái -->
+                            <div class="absolute top-4 left-4 z-10">
+                                <span class="bg-black text-white text-xs font-bold px-2.5 py-1 uppercase tracking-wide">
+                                    ${firstTag}
+                                </span>
+                            </div>
+                            
+                            <!-- Tiêu đề góc dưới -->
+                            <div class="absolute bottom-4 left-4 right-4 z-10">
+                                <h3 class="text-xl sm:text-2xl font-extrabold text-white leading-tight drop-shadow-md group-hover:text-gray-200 transition-colors line-clamp-3">
+                                    ${post.title}
+                                </h3>
+                            </div>
+                        </div>`;
+                    }).join('');
+                    
+                    grid.innerHTML = html;
+                } else {
+                    globalPosts = [];
+                    emptyState.classList.remove('hidden');
+                }
+            } catch (error) {
+                loader.classList.add('hidden');
+                loader.classList.remove('flex');
+                showToast('Lỗi kết nối tới server!', 'error');
+                console.error(error);
+            }
+        }
+
+        async function generatePost() {
+            const keywordInput = document.getElementById('keyword');
+            const keyword = keywordInput.value.trim();
+            const useCache = document.getElementById('useCacheToggle').checked;
+            const btn = document.getElementById('generate-btn');
+            
+            if (!keyword) {
+                showToast('Vui lòng nhập từ khóa!', 'error');
+                keywordInput.focus();
+                return;
+            }
+
+            const originalBtnHtml = btn.innerHTML;
+            btn.innerHTML = `AI đang xử lý...`;
+            btn.disabled = true;
+            btn.classList.add('opacity-75', 'cursor-not-allowed');
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/create-post`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ keyword: keyword, use_cache: useCache })
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    renderLastCallMeta(data.meta);
+                    fetchCacheStats();
+                    const hitStatus = data.meta && data.meta.cache_status === 'HIT'
+                        ? `⚡ CACHE HIT (${data.meta.latency_ms}ms - Tiết kiệm ${data.meta.tokens_saved} tokens)`
+                        : `🌐 Đã gọi Gemini API (${data.meta ? data.meta.latency_ms : 0}ms)`;
+                    showToast(`Tạo bài thành công! ${hitStatus}`, 'success');
+                } else {
+                    showToast(data.message || 'Có lỗi xảy ra từ Server', 'error');
+                }
+            } catch (error) {
+                showToast('Không thể kết nối tới Blog Service!', 'error');
+                console.error(error);
+            } finally {
+                btn.innerHTML = originalBtnHtml;
+                btn.disabled = false;
+                btn.classList.remove('opacity-75', 'cursor-not-allowed');
+            }
+        }
+
+        async function generatePostFromDoc() {
+            const fileInput = document.getElementById('documentFile');
+            const promptInput = document.getElementById('docPrompt');
+            const useCache = document.getElementById('useCacheToggle').checked;
+            const btn = document.getElementById('generate-doc-btn');
+
+            if (fileInput.files.length === 0) {
+                showToast('Vui lòng chọn một file tài liệu!', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('prompt', promptInput.value);
+            formData.append('use_cache', useCache);
+
+            const originalText = btn.innerHTML;
+            btn.innerHTML = `Đang phân tích tài liệu và viết bài...`;
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/create-post-from-doc`, {
+                    method: 'POST',
+                    body: formData 
+                });
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    renderLastCallMeta(data.meta);
+                    fetchCacheStats();
+                    const hitStatus = data.meta && data.meta.cache_status === 'HIT'
+                        ? `⚡ CACHE HIT (${data.meta.latency_ms}ms)`
+                        : (data.meta && data.meta.cache_status === 'PARTIAL_HIT' ? `📄 Tái sử dụng File URI Cache (${data.meta.latency_ms}ms)` : `🌐 Đã upload & phân tích (${data.meta ? data.meta.latency_ms : 0}ms)`);
+                    showToast(`Tạo bài từ tài liệu thành công! ${hitStatus}`, 'success');
+                } else {
+                    showToast(data.message || 'Có lỗi xảy ra', 'error');
+                }
+            } catch (error) {
+                showToast('Không thể kết nối tới Blog Service!', 'error');
+                console.error(error);
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        window.onload = () => {
+            document.getElementById('warnThreshold').value = String(warnThreshold);  // [RATE LIMIT]
+            fetchPosts();
+            fetchCacheStats();                       // [RATE LIMIT]
+            setInterval(fetchCacheStats, 3000);      // [RATE LIMIT] tự cập nhật mỗi 3 giây
+        };
+    </script>
+</body>
+</html>
