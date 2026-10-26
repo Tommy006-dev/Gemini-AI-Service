@@ -122,7 +122,6 @@
                     </div>
                 </div>
 
-<<<<<<< HEAD
                 <!-- ===== [RATE LIMIT] Bảng RPM / TPM / RPD + cảnh báo ===== -->
                 <div class="px-6 py-4 border-t border-gray-100 bg-white">
                     <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
@@ -144,8 +143,6 @@
                     <div id="rate-usage-container" class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-gray-500">Đang tải...</div>
                 </div>
 
-=======
->>>>>>> 49386415f2b32fd2115aa057de29c9deda5b7c14
                 <!-- Danh sách các mục đang nằm trong Cache -->
                 <div class="px-6 py-3 bg-gray-50 border-t border-gray-100 text-xs text-gray-600 flex flex-wrap justify-between items-center gap-2">
                     <div>
@@ -311,20 +308,16 @@
                         const topics = (data.cached_items || []).map(i => `"${i.topic}"`).join(', ');
                         summaryEl.textContent = `${respCount} bài viết & ${fileCount} file URI đang lưu (${topics})`;
                     }
-<<<<<<< HEAD
 
                     // [RATE LIMIT] vẽ bảng RPM/TPM/RPD
                     lastRateUsage = data.rate_usage;
                     renderRateUsage(lastRateUsage);
-=======
->>>>>>> 49386415f2b32fd2115aa057de29c9deda5b7c14
                 }
             } catch (err) {
                 console.error("Không thể tải thống kê cache:", err);
             }
         }
 
-<<<<<<< HEAD
         // ======================= [RATE LIMIT] RPM / TPM / RPD + cảnh báo =======================
         const RATE_METRICS = [
             { key: 'rpm', label: 'RPM', hint: 'request/phút' },
@@ -403,8 +396,6 @@
             }
         }
 
-=======
->>>>>>> 49386415f2b32fd2115aa057de29c9deda5b7c14
         async function clearAiCache() {
             try {
                 const response = await fetch(`${API_BASE_URL}/cache-clear`, { method: 'DELETE' });
@@ -611,14 +602,10 @@
         }
 
         window.onload = () => {
-<<<<<<< HEAD
             document.getElementById('warnThreshold').value = String(warnThreshold);  // [RATE LIMIT]
             fetchPosts();
             fetchCacheStats();                       // [RATE LIMIT]
             setInterval(fetchCacheStats, 3000);      // [RATE LIMIT] tự cập nhật mỗi 3 giây
-=======
-            fetchPosts();
->>>>>>> 49386415f2b32fd2115aa057de29c9deda5b7c14
         };
     </script>
 </body>
